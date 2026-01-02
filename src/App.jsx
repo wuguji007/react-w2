@@ -25,28 +25,27 @@ function App() {
     })
    }  
 
-  const handleLogin = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault(); //避免submit預設重新整理頁面
-    
-    try {
-      const res = await axios.post(`${BASE_URL}/v2/admin/signin`, account)
-      const { token, expired } = res.data;
-      document.cookie = `hexToken=${token}; expires=${new Date(expired)}`;
-        //發送請求前，先將token加入Authorization headers
-      axios.defaults.headers.common['Authorization'] = token;
 
-      try {
-        const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/products`)
-        setProducts(res.data.products); 
-      } catch (error) {
-        console.log(error);
-      }
-     
-      setIsAuth(true);
-    } catch (error) {
-      console.log(error);
-    }
+    axios.post(`${BASE_URL}/v2/admin/signin`, account)
+      .then(res => {
+        const { token, expired } = res.data;
+        document.cookie = `hexToken=${token}; expires=${new Date(expired)}`;
+        //發送請求前，先將token加入Authorization headers
+        axios.defaults.headers.common['Authorization'] = token;
+
+        axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/products`)
+          .then(res =>{setProducts(res.data.products);})
+          .catch(err => {console.log(err);});
+
+        setIsAuth(true);
+      })
+      .catch(err => {
+        console.log(err);
+      });
   }
+
 
   const checkLogin = async () => {
     try {
